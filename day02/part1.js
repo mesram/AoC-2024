@@ -1,25 +1,23 @@
 function isSafe(report) {
     let [previous, ...levels] = report
-    let safe = true;
-    let increasing = null;
+
+    let increasing = true;
+    let decreasing = true;
+    let minDelta = Number.MAX_SAFE_INTEGER;
+    let maxDelta = 0;
+
     for (const level of levels) {
         const delta = level - previous;
-        if (increasing !== null && increasing !== delta > 0) {
-            safe = false;
-            break;
-        }
 
-        increasing = delta > 0;
-
-        if (Math.abs(delta) < 1 || Math.abs(delta) > 3) {
-            safe = false;
-            break;
-        }
-
-        previous = level;    
+        increasing = increasing && delta > 0;
+        decreasing = decreasing && delta < 0;
+        maxDelta = Math.max(maxDelta, Math.abs(delta));
+        minDelta = Math.min(minDelta, Math.abs(delta));  
+        
+        previous = level;
     }
 
-    return safe;
+    return (increasing || decreasing) && minDelta >= 1 && maxDelta <= 3;
 }
 
 let safeCount = 0;
