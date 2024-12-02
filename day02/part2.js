@@ -19,8 +19,8 @@ for await (const line of console) {
     const report = line.split(" ").map(Number);
     
     for (let i = 0; i < report.length; i += 1) {
-        let permutation = report.filter((_, index) => index !== i);
-        if (isSafe(permutation)) {
+        let reduced = report.filter((_, index) => index !== i);
+        if (isSafe(reduced)) {
             safeCount += 1;
             break;
         }
