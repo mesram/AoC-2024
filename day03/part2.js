@@ -5,12 +5,8 @@ for await (const line of console) {
     const doExpression = "do\\(\\)"
     const dontExpression = "don't\\(\\)"
     const mulExpression = "mul\\((\\d{1,3}),(\\d{1,3})\\)"
-    const regex = new RegExp(`(${doExpression}|${dontExpression}|${mulExpression})`, "g");
-    while (true) {
-        const match = regex.exec(line);
-        if (!match) break;
-        const [wholeMatch, sub, num1, num2] = match;
-
+    const expression = new RegExp(`(${doExpression}|${dontExpression}|${mulExpression})`, "g");
+    for (const [wholeMatch, _, num1, num2] of line.matchAll(expression)) {
         if (wholeMatch === "do()") {
             enabled = true;
         } else if (wholeMatch === "don't()") {
