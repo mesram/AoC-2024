@@ -1,29 +1,16 @@
+import { arrayWindow2d } from "../utils/arrayWindow";
+
 let rows = [];
 for await (const line of console) {
     rows.push(line.split(""));
 }
 
-let width = rows[0].length;
-let height = rows.length;
-
-function match(char1, char2) {
-    return (char1 === "M" && char2 === "S") || (char1 === "S" && char2 === "M")
-}
-
 let count = 0;
-for (let i = 0; i < height; i += 1) {
-    for (let j = 0; j < width; j += 1) {
-        if (rows[i][j] !== "A") {
-            continue;
-        }
+for (const w of arrayWindow2d(rows, [3, 3])) {
+    const diag1 = w[0][0] + w[1][1] + w[2][2];
+    const diag2 = w[0][2] + w[1][1] + w[2][0];
 
-        if (
-            match(rows[i - 1]?.[j - 1] ?? "", rows[i + 1]?.[j + 1] ?? "")
-            && match(rows[i - 1]?.[j + 1] ?? "", rows[i + 1]?.[j - 1] ?? "")
-        ) {
-            count += 1;
-        }
-    }
+    const tests = ["MAS", "SAM"];
+    if (tests.includes(diag1) && tests.includes(diag2)) count += 1;
 }
-
 console.log(count);
