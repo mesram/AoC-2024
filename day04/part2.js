@@ -7,10 +7,13 @@ for await (const line of console) {
 
 let count = 0;
 for (const w of arrayWindow2d(rows, [3, 3])) {
-    const diag1 = w[0][0] + w[1][1] + w[2][2];
-    const diag2 = w[0][2] + w[1][1] + w[2][0];
+    const [
+        [ tl,   , tr,],
+        [   , md,   ,],
+        [ bl,   , br,],
+    ] = w;
 
     const tests = ["MAS", "SAM"];
-    if (tests.includes(diag1) && tests.includes(diag2)) count += 1;
+    if (tests.includes(tl + md + br) && tests.includes(tr + md + bl)) count += 1;
 }
 console.log(count);
