@@ -5,46 +5,62 @@ for await (const line of console) {
     rules.push(line.split("|"));
 }
 
-function getDependencyOrdering(rules) {
-    const parents = new Map(); // parent -> child[]
-    const children = new Map(); // child -> parent[]
-
-    for (const rule of rules) {
-        const [parent, child] = rule;
-
-        if (!parents.has(parent)) {
-            parents.set(parent, new Set());
+let total = 0;
+for await (const line of console) {
+    const pages = line.split(",");
+    const filteredRules = rules.filter(([parent, child]) => pages.includes(parent) && pages.includes(child));
+    const flattened = getDependencyOrdering(filteredRules);
+    let previousIndex = -1;
+    let valid = true;
+    for (const page of pages) {
+        let index = flattened.indexOf(page);
+        if (index < previousIndex) {
+            valid = false;
+            break;
         }
+        previousIndex = index;
+    }
 
-        if (!parents.has(child)) {
-            parents.set(child, new Set());
-        }
+    if (!valid) continue;
+
+    total += Number(pages[Math.floor(pages.length / 2)])
+}
+
+console.log(total);
+
+function getDependencyOrdering(dependencies) {
+    const parents = {}; // parent -> child[]
+    const children = {}; // child -> parent[]
+
+    for (const [parent, child] of dependencies) {
+        parents[parent] ??= new Set();
+        parents[parent].add(child);
+
+        parents[child] ??= new Set();
     
-        parents.get(parent).add(child);
-    
-        if (!children.has(child)) {
-            children.set(child, new Set());
-        }
-    
-        children.get(child).add(parent);
+        children[child] ??= new Set();
+        children[child].add(parent);
     }
 
     const resolved = [];
 
-    while (parents.size > 0) {
+    while (true) {
+        const entries = Object.entries(parents);
+        if (entries.length === 0) break;
+
         let found = false;
-        for (const [parent, dependencies] of parents.entries()) {
+        for (const [parent, dependencies] of entries) {
             // if the parent is still dependent on something else, then we can't add it to the list yet
-            if (children.has(parent)) continue;
+            if (parent in children) continue;
 
             // parent is a root node, add it to the list
             resolved.push(parent);
-            parents.delete(parent);
+            delete parents[parent];
             found = true;
 
             // clear the dependencies from the children
             for (const child of dependencies) {
-                children.get(child).delete(parent);
+                children[child].delete(parent);
             
                 // child no longer has any dependencies of its own, meaning we can add it to the list
                 /*
@@ -58,7 +74,7 @@ function getDependencyOrdering(rules) {
                     should be considered valid, but this part here would could an implicit 2|3 rule
                     thankfully the AoC puzzle makers don't test for this
                 */
-                if (children.get(child).size === 0) children.delete(child);
+                if (children[child].size === 0) delete children[child];
             }
         }
         
@@ -69,28 +85,3 @@ function getDependencyOrdering(rules) {
 
     return resolved;
 }
-
-let total = 0;
-for await (const line of console) {
-    const pages = line.split(",");
-    const filteredRules = rules.filter(([parent, child]) => pages.includes(parent) && pages.includes(child));
-    const flattened = getDependencyOrdering(filteredRules);
-    let previousIndex = -1;
-    let valid = true;
-    for (const page of pages) {
-        let index = flattened.indexOf(page);
-        if (index === -1) continue;
-        if (index < previousIndex) {
-            valid = false;
-            break;
-        }
-        previousIndex = index;
-    }
-
-    if (valid) {
-        total += Number(pages[Math.floor(pages.length / 2)])
-    }
-    console.log(`${line} = ${valid ? 'good' : 'BAD!!'}`);
-}
-
-console.log(total);
