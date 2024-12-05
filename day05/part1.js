@@ -5,17 +5,19 @@ for await (const line of console) {
     rules.push(line.split("|"));
 }
 
-function getOrder(pages) {
-    const parents = new Map();
-    const children = new Map();
+function getDependencyOrdering(rules) {
+    const parents = new Map(); // parent -> child[]
+    const children = new Map(); // child -> parent[]
 
     for (const rule of rules) {
         const [parent, child] = rule;
 
-        if (!pages.includes(parent) || !pages.includes(child)) continue;
-
         if (!parents.has(parent)) {
             parents.set(parent, new Set());
+        }
+
+        if (!parents.has(child)) {
+            parents.set(child, new Set());
         }
     
         parents.get(parent).add(child);
@@ -27,53 +29,52 @@ function getOrder(pages) {
         children.get(child).add(parent);
     }
 
-    const flattened = [];
-    let appended = 0;
+    const resolved = [];
 
     while (parents.size > 0) {
         let found = false;
         for (const [parent, dependencies] of parents.entries()) {
-            if (!children.has(parent)) {
-                // this is a root node
-                flattened.push(parent);
-                for (const child of dependencies) {
-                    children.get(child).delete(parent);
-                    if (children.get(child).size === 0) {
-                        children.delete(child);
-                        if (!parents.has(child)) {
-                            /*
-                            strictly speaking, this can lead to ambiguous ordering where a valid input could be considered invalid
+            // if the parent is still dependent on something else, then we can't add it to the list yet
+            if (children.has(parent)) continue;
 
-                                1|2
-                                1|3
+            // parent is a root node, add it to the list
+            resolved.push(parent);
+            parents.delete(parent);
+            found = true;
 
-                                1,3,2
+            // clear the dependencies from the children
+            for (const child of dependencies) {
+                children.get(child).delete(parent);
+            
+                // child no longer has any dependencies of its own, meaning we can add it to the list
+                /*
+                    strictly speaking, this can lead to ambiguous ordering where a valid input could be considered invalid
 
-                            should be considered valid, but this part here would could an implicit 2|3 rule
-                            thankfully the AoC puzzle makers don't test for this
-                            */
-                            flattened.push(child);
-                        }
-                    }
-                }
-                parents.delete(parent);
-                found = true;
-                break;
+                        1|2
+                        1|3
+
+                        1,3,2
+
+                    should be considered valid, but this part here would could an implicit 2|3 rule
+                    thankfully the AoC puzzle makers don't test for this
+                */
+                if (children.get(child).size === 0) children.delete(child);
             }
         }
+        
         if (!found) {
-            console.log("HUH??", flattened);
-            throw "bad input"
+            throw `Bad input: cycle detected, resolved ${resolved.join(',')}`
         }
     }
 
-    return flattened;
+    return resolved;
 }
 
 let total = 0;
 for await (const line of console) {
     const pages = line.split(",");
-    const flattened = getOrder(pages);
+    const filteredRules = rules.filter(([parent, child]) => pages.includes(parent) && pages.includes(child));
+    const flattened = getDependencyOrdering(filteredRules);
     let previousIndex = -1;
     let valid = true;
     for (const page of pages) {
