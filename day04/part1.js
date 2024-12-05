@@ -7,15 +7,38 @@ for await (const line of console) {
 
 let count = 0;
 for (const w of arrayWindow2d(rows, [4, 4], { overflow: true, emptyValue: "." })) {
-    const right = w[0][0] + w[0][1] + w[0][2] + w[0][3]
-    const down =  w[0][0] + w[1][0] + w[2][0] + w[3][0]
-    const downRight =  w[0][0] + w[1][1] + w[2][2] + w[3][3]
-    const downLeft =  w[0][3] + w[1][2] + w[2][1] + w[3][0]
+    const [
+        [ a1, a2, a3, a4,],
+        [   ,   ,   ,   ,],
+        [   ,   ,   ,   ,],
+        [   ,   ,   ,   ,],
+    ] = w;
+
+    const [
+        [ b1,   ,   ,   ,],
+        [ b2,   ,   ,   ,],
+        [ b3,   ,   ,   ,],
+        [ b4,   ,   ,   ,],
+    ] = w;
+
+    const [
+        [ c1,   ,   ,   ,],
+        [   , c2,   ,   ,],
+        [   ,   , c3,   ,],
+        [   ,   ,   , c4,],
+    ] = w;
+
+    const [
+        [   ,   ,   , d1,],
+        [   ,   , d2,   ,],
+        [   , d3,   ,   ,],
+        [ d4,   ,   ,   ,],
+    ] = w;
 
     const tests = ["XMAS", "SAMX"];
-    count += tests.includes(right) ? 1 : 0;
-    count += tests.includes(down) ? 1 : 0;
-    count += tests.includes(downRight) ? 1 : 0;
-    count += tests.includes(downLeft) ? 1 : 0;
+    count += tests.includes(a1 + a2 + a3 + a4) ? 1 : 0;
+    count += tests.includes(b1 + b2 + b3 + b4) ? 1 : 0;
+    count += tests.includes(c1 + c2 + c3 + c4) ? 1 : 0;
+    count += tests.includes(d1 + d2 + d3 + d4) ? 1 : 0;
 }
 console.log(count);
