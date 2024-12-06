@@ -69,7 +69,7 @@ function createsLoop() {
         const nextCell = map[row + nextRowOffset]?.[column + nextColumnOffset];
         if (!nextCell) {
             // done
-            break;
+            return false;
         } else if (nextCell === "#") {
             // rotate
             direction = rotation;
@@ -79,5 +79,4 @@ function createsLoop() {
             column += nextColumnOffset;
         }
     }
-    
 }
