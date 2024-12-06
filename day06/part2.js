@@ -30,21 +30,38 @@ for (let row = 0; row < height; row += 1) {
 
 map[startingRow][startingColumn] = '.'; // just get a bare map without the guard
 
-let total = 0;
-for (let row = 0; row < width; row += 1) {
-    for (let column = 0; column < height; column += 1) {
-        if (row === startingRow && column === startingColumn) {
-            // can't place in the starting position
-            continue;
-        } else if(map[row][column] === "#") {
-            continue; // already an obstruction
-        }
+let direction = startingDirection;
+let row = startingRow;
+let column = startingColumn;
 
+let visits = new Set();
+let total = 0;
+while (true) {
+    const key = `${row}.${column}`;
+    if (!visits.has(key) && (row !== startingRow || column !== startingColumn)) {
         map[row][column] = "#";
-        if (createsLoop(row, column)) {
+        if (createsLoop()) {
             total += 1;
         }
         map[row][column] = ".";
+        // add obstruction here instead and test if it loops
+    }
+
+    visits.add(key);
+
+    const { rotation, nextRowOffset, nextColumnOffset } = nextMap[direction];
+    
+    const nextCell = map[row + nextRowOffset]?.[column + nextColumnOffset];
+    if (!nextCell) {
+        // done
+        break;
+    } else if (nextCell === "#") {
+        // rotate
+        direction = rotation;
+    } else {
+        // move forward
+        row += nextRowOffset;
+        column += nextColumnOffset;
     }
 }
 
