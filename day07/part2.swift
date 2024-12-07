@@ -16,7 +16,7 @@ func matches(_ target: Int, _ numbers: ArraySlice<Int>, _ currentValue: Int) -> 
         return currentValue == target
     }
 
-    let nextSequence = numbers.dropFirst();
+    let nextSequence = numbers.dropFirst()
 
     return matches(target, nextSequence, currentValue + num)
         || matches(target, nextSequence, currentValue * num)

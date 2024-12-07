@@ -16,7 +16,7 @@ function matches(target, numbers, currentValue) {
         return currentValue === target;
     }
 
-    const [val, ...rest] = numbers
+    const [val, ...rest] = numbers;
 
     return matches(target, rest, currentValue + val)
         || matches(target, rest, currentValue * val)
