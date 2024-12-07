@@ -2,24 +2,23 @@ let total = 0;
 for await (const line of console) {
     const pieces = line.split(": ");
     const target = Number(pieces[0]);
-    const numbers = pieces[1].split(" ").map((n) => Number(n));
+    const [first, ...numbers] = pieces[1].split(" ").map((n) => Number(n));
 
-    if (matches(target, numbers, 1, numbers[0])) {
+    if (matches(target, numbers, first)) {
         total += target;
     }
 }
 
 console.log(total);
 
-function matches(target, numbers, i, currentValue) {
-    if (i === numbers.length) {
+function matches(target, numbers, currentValue) {
+    if (numbers.length === 0) {
         return currentValue === target;
     }
 
-    let val = numbers[i]
+    const [val, ...rest] = numbers
 
-    return matches(target, numbers, i + 1, currentValue + val)
-        || matches(target, numbers, i + 1, currentValue * val)
-        || matches(target, numbers, i + 1, Number(`${currentValue}${val}`))
-    ;
+    return matches(target, rest, currentValue + val)
+        || matches(target, rest, currentValue * val)
+        || matches(target, rest, Number(`${currentValue}${val}`));
 }
