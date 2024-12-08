@@ -26,25 +26,20 @@ for (const [frequency, locations] of Object.entries(frequencyLocations)) {
             let [row1, col1] = locations[i];
             let [row2, col2] = locations[j];
 
-            antinodeLocations.add(`${row1}.${col1}`);
-            antinodeLocations.add(`${row2}.${col2}`);
-
             const dRow = row2 - row1;
             const dCol = col2 - col1;
 
-            while (true) {
+            do {
+                antinodeLocations.add(`${row1}.${col1}`);
                 row1 -= dRow;
                 col1 -= dCol;
-                if (row1 < 0 || row1 >= height || col1 < 0 || col1 >= width) break;
-                antinodeLocations.add(`${row1}.${col1}`);
-            }
+            } while (row1 >= 0 && row1 < height && col1 >= 0 && col1 < width);
 
-            while (true) {
+            do {
+                antinodeLocations.add(`${row2}.${col2}`);
                 row2 += dRow;
                 col2 += dCol;
-                if (row2 < 0 || row2 >= height || col2 < 0 || col2 >= width) break;
-                antinodeLocations.add(`${row2}.${col2}`);
-            }
+            } while (row2 >= 0 && row2 < height && col2 >= 0 && col2 < width);
         }
     }
 }
