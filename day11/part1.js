@@ -19,6 +19,6 @@ function updateStone(stone) {
             String(Number(stone.substring(stone.length / 2))),
         ];
     } else {
-        return String(Number(stone) * 2024);
+        return [String(Number(stone) * 2024)];
     }
 }
