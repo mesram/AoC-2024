@@ -1,16 +1,24 @@
+let stones;
 for await (const line of console) {
-    const cache = {};
-    let total = line.split(" ").reduce((total, stone) => total + getStoneCount(stone, cache, 75), 0);
-    console.log(total);
+    stones = Object.fromEntries(line.split(" ").map(stone => [stone, 1]));
     break;
 }
 
-function getStoneCount(stone, cache, iterCount) {
-    if (iterCount === 0) return 1;
+for (let i = 0; i < 75; i += 1) {
+    stones = blink(stones);
+}
 
-    const cacheKey = `${iterCount}.${stone}`;
-    cache[cacheKey] ??= updateStone(stone).reduce((total, stone) => total + getStoneCount(stone, cache, iterCount - 1), 0);
-    return cache[cacheKey];
+console.log(Object.values(stones).reduce((t, v) => t + v, 0));
+
+function blink(stones) {
+    const result = {}
+    for (const [stone, count] of Object.entries(stones)) {
+        for (const s of updateStone(stone)) {
+            result[s] ??= 0
+            result[s] += count
+        }
+    }
+    return result
 }
 
 function updateStone(stone) {
