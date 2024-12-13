@@ -65,23 +65,21 @@ while (queue.length > 0) {
 
         if (direction === up || direction === down) {
             grouped = edgeList.reduce((acc, [row, column]) => {
-                return {
-                    ...acc,
-                    [row]: [...(acc[row] ?? []), column]
-                }
+                acc[row] ??= [];
+                acc[row].push(column);
+                return acc;
             }, {});
         } else {
             grouped = edgeList.reduce((acc, [row, column]) => {
-                return {
-                    ...acc,
-                    [column]: [...(acc[column] ?? []), row]
-                }
+                acc[column] ??= [];
+                acc[column].push(row);
+                return acc;
             }, {});
         }
 
         for (const columns of Object.values(grouped)) {
             let previous = Number.NEGATIVE_INFINITY;
-            columns.sort();
+            columns.sort((a, b) => a - b);
             for (const column of columns) {
                 if (column !== previous + 1) {
                     edgeCount += 1;
