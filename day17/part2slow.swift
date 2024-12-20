@@ -1,62 +1,80 @@
 let initA = try! UInt(#/Register A: (\d+)/#.wholeMatch(in: readLine()!)!.output.1)!
 let initB = try! UInt(#/Register B: (\d+)/#.wholeMatch(in: readLine()!)!.output.1)!
 let initC = try! UInt(#/Register C: (\d+)/#.wholeMatch(in: readLine()!)!.output.1)!
-
 _ = readLine()
-
 let instructions = try! #/Program: (.*)/#.wholeMatch(in: readLine()!)!.output.1.split(separator: ",").map { UInt($0)! }
 
-var PC = 0;
-var OUT = [UInt]();
+struct CPU {
+    var PC: UInt
+    var OUT: [UInt]
+    var registerA: UInt
+    var registerB: UInt
+    var registerC: UInt
 
-var registerA = initA
-var registerB = initB
-var registerC = initC
+    init(registerA: UInt, registerB: UInt, registerC: UInt) {
+        self.PC = 0
+        self.OUT = []
+        self.registerA = registerA
+        self.registerB = registerB
+        self.registerC = registerC
+    }
 
-let literal = { (operand: UInt) in operand }
-let combo = { (operand: UInt) in
-    switch (operand) {
-        case 0: fallthrough
-        case 1: fallthrough
-        case 2: fallthrough
-        case 3: return operand;
-        case 4: return registerA;
-        case 5: return registerB;
-        case 6: return registerC;
-        case 7: fatalError("Operand 7 used"); 
-        default: fatalError("Unknown combo operand \(operand)")
+    func combo(_ operand: UInt) -> UInt {
+        switch (operand) {
+            case 0: 0
+            case 1: 1
+            case 2: 2
+            case 3: 3
+            case 4: registerA
+            case 5: registerB
+            case 6: registerC
+            default: fatalError("Unknown combo operand \(operand)")
+        }
+    }
+
+    func literal(_ operand: UInt) -> UInt {
+        operand
+    }
+
+    mutating func update(opcode: OpCode, operand: UInt) -> Void {
+        switch (opcode) {  
+        case .adv:
+            registerA = registerA >> combo(operand)
+            PC += 2
+        case .bxl:
+            registerB = registerB ^ literal(operand)
+            PC += 2
+        case .bst:
+            registerB = combo(operand) % 8
+            PC += 2
+        case .jnz:
+            PC = registerA == 0 ? PC + 2 : literal(operand)
+        case .bxc:
+            registerB = registerB ^ registerC
+            PC += 2
+        case .out:
+            OUT.append(combo(operand) % 8)
+            PC += 2
+        case .bdv:
+            registerB = registerA >> combo(operand)
+            PC += 2
+        case .cdv:
+            registerC = registerA >> combo(operand)
+            PC += 2
+        }
     }
 }
 
-let opcodes: [String: (UInt) -> Void] = [
-    "adv": { op in 
-        registerA = registerA >> combo(op);
-    },
-    "bxl": { op in
-        registerB = registerB ^ literal(op);
-    },
-    "bst": { op in
-        registerB = combo(op) % 8;
-    },
-    "jnz": { op in
-        if (registerA == 0) { return }
-
-        PC = Int(literal(op));
-        PC -= 2; // counteract the increase on the loop
-    },
-    "bxc": { op in
-        registerB = registerB ^ registerC;
-    },
-    "out": { op in
-        OUT.append(combo(op) % 8);
-    },
-    "bdv": { op in
-        registerB = registerA >> combo(op);
-    },
-    "cdv": { op in
-        registerC = registerA >> combo(op);
-    },
-];
+enum OpCode: UInt {
+    case adv = 0
+    case bxl
+    case bst
+    case jnz
+    case bxc
+    case out
+    case bdv
+    case cdv
+}
 
 let opcodeMap = [
     "adv",
@@ -69,25 +87,26 @@ let opcodeMap = [
     "cdv",
 ];
 
+var context = CPU(registerA: initA, registerB: initB, registerC: initC)
+
+while context.PC < instructions.count - 1 {
+    context.update(
+        opcode: OpCode(rawValue: instructions[Int(context.PC)])!,
+        operand: instructions[Int(context.PC + 1)]
+    )
+}
 
 for i in 0..<UInt.max {
-    PC = 0;
-    OUT = [UInt]();
+    var context = CPU(registerA: i, registerB: initB, registerC: initC)
 
-    registerA = i
-    registerB = initB
-    registerC = initC
+    while context.PC < instructions.count - 1 {
+        context.update(
+            opcode: OpCode(rawValue: instructions[Int(context.PC)])!,
+            operand: instructions[Int(context.PC + 1)]
+        )
+    }   
 
-    while PC < instructions.count {
-        let opcode = opcodeMap[Int(instructions[PC])];
-        let operand = instructions[PC + 1];
-
-        opcodes[opcode]!(operand);
-
-        PC += 2
-    }
-
-    if OUT == instructions {
+    if context.OUT == instructions {
         print("Got result \(i)")
         break
     }
