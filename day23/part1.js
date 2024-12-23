@@ -10,25 +10,23 @@ for (const [first, second] of pairs) {
     map[second].add(first);
 }
 
-let computers = Object.keys(map);
-let results = new Set();
-for (const computer1 of computers) {
-    for (const computer2 of computers) {
-        for (const computer3 of computers) {
-            if (
-                map[computer1].has(computer2)
-                && map[computer1].has(computer3)
-                && map[computer2].has(computer3)
-            ) {
+const computers = Object.keys(map).sort();
+const results = [];
+for (let i = 0; i < computers.length; i += 1) {
+    const computer1 = computers[i];
+    for (let j = i + 1; j < computers.length; j += 1) {
+        const computer2 = computers[j];
+        if (!map[computer1].has(computer2)) continue;
+        for (let k = j + 1; k < computers.length; k += 1) {
+            const computer3 = computers[k];
+            if (!map[computer2].has(computer3) || !map[computer3].has(computer1)) continue;
 
-                let sorted = [computer1, computer2, computer3].sort()
-            
-                if (sorted.length === 3 && sorted.some(item => item.startsWith('t'))) {
-                    results.add(sorted.join(','))
-                }
+            const all = [computer1, computer2, computer3];
+            if (all.some(item => item.startsWith('t'))) {
+                results.push(all.join(','))
             }
         }
     }
 }
 
-console.log(results.size);
+console.log(`Part1: ${results.length}`);
